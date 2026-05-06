@@ -118,6 +118,33 @@ Describe "pacwin core logic" {
                 _pw_sanitize "google`nchrome" | Should -Be "googlechrome"
             }
         }
+        It "Handles non-ASCII characters and emojis correctly" {
+            InModuleScope pacwin {
+                _pw_sanitize "café" | Should -Be "café"
+                _pw_sanitize "😀hello🚀" | Should -Be "hello"
+            }
+        }
+        It "Handles numbers correctly" {
+            InModuleScope pacwin {
+                _pw_sanitize "12345" | Should -Be "12345"
+            }
+        }
+        It "Handles array input by converting to string" {
+            InModuleScope pacwin {
+                $arr = @("abc", "def")
+                _pw_sanitize $arr | Should -Be "abcdef"
+            }
+        }
+        It "Handles symbols that are not allowed correctly" {
+            InModuleScope pacwin {
+                _pw_sanitize "!@#$%^&*()=" | Should -Be ""
+                _pw_sanitize 'a!b@c#d$e%f^g&h*i(j)k=l' | Should -Be 'abcdefghijkl'
+            }
+        }
+
+
+
+
     }
 
     Context "Command Dispatcher" {
