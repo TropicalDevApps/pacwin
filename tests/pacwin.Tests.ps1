@@ -7,31 +7,37 @@ BeforeAll {
     Remove-Module pacwin -ErrorAction SilentlyContinue
 
     # If ModulePath was passed via -Data, use it. Otherwise, search.
-    if ($null -ne $ModulePath -and (Test-Path $ModulePath)) {
+    if ($null -ne $ModulePath -and (Test-Path $ModulePath))
+    {
         $ModuleFile = Get-Item $ModulePath
-    }
-    else {
+    } else
+    {
         $current = $PSScriptRoot
         $ModuleFile = $null
-        for ($i = 0; $i -lt 5; $i++) {
+        for ($i = 0; $i -lt 5; $i++)
+        {
             $candidate = Join-Path $current "pacwin.psm1"
-            if (Test-Path $candidate) {
+            if (Test-Path $candidate)
+            {
                 $ModuleFile = Get-Item $candidate
                 break
             }
             $current = Split-Path $current -Parent
-            if (-not $current) { break }
+            if (-not $current)
+            { break
+            }
         }
     }
 
-    if ($null -eq $ModuleFile) {
+    if ($null -eq $ModuleFile)
+    {
         throw "Unable to locate pacwin.psm1. Search started at: $PSScriptRoot"
     }
     Import-Module $ModuleFile.FullName -Force
 }
 
 Describe "pacwin core logic" {
-    
+
     BeforeEach {
         # Global mocks to prevent side effects
         Mock -ModuleName pacwin _pw_is_admin { return $true }
@@ -44,50 +50,52 @@ Describe "pacwin core logic" {
     It "Correctly maps shorthand -Ss to search flow" {
         Mock -ModuleName pacwin _pw_search_all { param($mgrs, $q, $l, $t) return @() }
         Mock -ModuleName pacwin _pw_render_results { param($res, $q) }
-        
+
         { pacwin -Ss "wget" -Manager winget } | Should -Not -Throw
         Assert-MockCalled _pw_search_all -ModuleName pacwin
     }
 
     It "Correctly maps shorthand -S to install flow" {
         Mock -ModuleName pacwin _pw_search_all { return @([PSCustomObject]@{ ID="wget"; Manager="winget"; Name="wget" }) }
-        Mock -ModuleName pacwin _pw_pick_source { param($candidates) if ($candidates -is [array]) { return $candidates[0] } return $candidates }
+        Mock -ModuleName pacwin _pw_pick_source { param($candidates) if ($candidates -is [array])
+            { return $candidates[0]
+            } return $candidates }
         Mock -ModuleName pacwin _pw_do_install { param($pkg) return $true }
-        
+
         { pacwin -S "wget" -Manager winget } | Should -Not -Throw
         Assert-MockCalled _pw_do_install -ModuleName pacwin
     }
 
     It "Correctly maps shorthand -R to uninstall flow" {
         Mock -ModuleName pacwin _pw_do_uninstall { param($name, $mgr) }
-        
+
         { pacwin -R "wget" -Manager winget } | Should -Not -Throw
         Assert-MockCalled _pw_do_uninstall -ModuleName pacwin -ParameterFilter { $name -eq "wget" -and $mgr -eq "winget" }
     }
 
     It "Correctly maps shorthand -Syu to update flow" {
         Mock -ModuleName pacwin _pw_do_update_all { param($mgrs) }
-        
+
         { pacwin -Syu } | Should -Not -Throw
         Assert-MockCalled _pw_do_update_all -ModuleName pacwin -Times 1 -Exactly
     }
 
     It "Can run pacwin doctor without real environment checks" {
         Mock -ModuleName pacwin _pw_do_doctor { param($mgrs) }
-        
+
         $null = pacwin doctor
-        
+
         Assert-MockCalled _pw_do_doctor -ModuleName pacwin -Times 1 -Exactly
     }
 
     It "Supports standard PowerShell -WhatIf" {
         Mock -ModuleName pacwin _pw_search_all { return @([PSCustomObject]@{ Name="test"; ID="test"; Version="1.0"; Source="winget"; Manager="winget" }) }
         Mock -ModuleName pacwin _pw_pick_source { param($candidates) return $candidates[0] }
-        Mock -ModuleName pacwin _pw_do_install { 
+        Mock -ModuleName pacwin _pw_do_install {
             [CmdletBinding(SupportsShouldProcess)]
-            param($pkg) 
+            param($pkg)
         }
-        
+
         { pacwin install "testpkg" -WhatIf } | Should -Not -Throw
     }
 
@@ -104,6 +112,7 @@ Describe "pacwin core logic" {
             InModuleScope pacwin {
                 _pw_sanitize "google.chrome" | Should -Be "google.chrome"
                 _pw_sanitize "valid-id+123_abc" | Should -Be "valid-id+123_abc"
+                _pw_sanitize "v1.2.3-beta+exp" | Should -Be "v1.2.3-beta+exp"
             }
         }
 
@@ -118,17 +127,54 @@ Describe "pacwin core logic" {
                 _pw_sanitize "google`nchrome" | Should -Be "googlechrome"
             }
         }
+
+        It "Handles shell injection characters" {
+            InModuleScope pacwin {
+                _pw_sanitize "id|command" | Should -Be "idcommand"
+                _pw_sanitize "id&command" | Should -Be "idcommand"
+                _pw_sanitize "id<file" | Should -Be "idfile"
+                _pw_sanitize "id>file" | Should -Be "idfile"
+            }
+        }
+
+        It "Handles Unicode and Emojis" {
+            InModuleScope pacwin {
+                # \w in .NET regex usually includes Unicode word characters if configured,
+                # but our current regex [^\w\.\-\+] might strip them depending on environment.
+                # PR #35 expected them to be handled correctly.
+                _pw_sanitize "📦package" | Should -Be "package"
+                _pw_sanitize "ñ-package" | Should -Be "ñ-package"
+            }
+        }
+
+        It "Handles numeric and array inputs" {
+            InModuleScope pacwin {
+                _pw_sanitize 123 | Should -Be "123"
+                $arr = @("google", "chrome")
+                _pw_sanitize $arr | Should -Be "googlechrome"
+            }
+        }
     }
 
+    Context "Search Engine Error Handling" {
+        It "Gracefully handles package manager failures" {
+            # Use InModuleScope to call the internal _pw_search_all
+            InModuleScope pacwin {
+                # Provide a manager entry that exists in the switch but points to non-existent file
+                $res = _pw_search_all @{ "winget" = "non-existent-exe.exe" } "test" 10 5
+                @($res).Count | Should -Be 0
+            }
+        }
+    }
     Context "Command Dispatcher" {
         It "Recognizes new commands like 'hold' or 'sync'" {
             Mock -ModuleName pacwin _pw_do_pin { param($id, $mgr, $Unpin) }
             Mock -ModuleName pacwin _pw_do_sync { param($managers) }
-            
+
             # Test 'hold' (pin)
             $null = pacwin hold "test" -Manager winget
             Assert-MockCalled _pw_do_pin -ModuleName pacwin -ParameterFilter { $id -eq "test" }
-            
+
             # Test 'sync'
             $null = pacwin sync
             Assert-MockCalled _pw_do_sync -ModuleName pacwin -Times 1 -Exactly
