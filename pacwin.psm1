@@ -2,7 +2,7 @@
 #  pacwin.psm1  -  Universal Package Layer for Windows
 #  Abstraction over: winget | chocolatey | scoop
 #  Compatible: PowerShell 5.1 + PowerShell 7+
-#  v0.2.7 (Interactive search by default)
+#  v0.3.0 (Major Refactor & Optimizations)
 # ============================================================
 
 Set-StrictMode -Version 2.0
@@ -66,7 +66,7 @@ function _pw_header
     _pw_color ""
     _pw_color "  >> " Cyan -NoNewline
     _pw_color "pacwin" White -NoNewline
-    _pw_color " v0.2.7" DarkGray -NoNewline
+    _pw_color " v0.3.0" DarkGray -NoNewline
     _pw_color "  --  " DarkGray -NoNewline
     _pw_color "universal package layer" DarkGray
 
@@ -294,23 +294,23 @@ function _pw_parse_winget_lines
     foreach ($line in $lines)
     {
         if ($line -eq $separatorLine)
-        { $dataStart = $true; continue 
+        { $dataStart = $true; continue
         }
         if (-not $dataStart -or $line -match "^\s*$|^-|^[^\x00-\x7F]|%|[\d.]+\s+[KMG]B\s*/")
-        { continue 
+        { continue
         }
 
         $name = _pw_extract_column $line $nameOff $nameLen $null
         $id   = _pw_extract_column $line $idOff   $idLen   $null
 
         if (-not $name -or -not $id)
-        { continue 
+        { continue
         }
 
         $vLen = if ($sourceOff -gt $versionOff -and $versionOff -gt 0)
-        { $sourceOff - $versionOff 
+        { $sourceOff - $versionOff
         } else
-        { $versionLen 
+        { $versionLen
         }
         $ver  = _pw_extract_column $line $versionOff $vLen "?"
 
@@ -914,7 +914,7 @@ function pacwin
 
         "^(version|-V|--version)$"
         {
-            _pw_color "  pacwin v0.2.7" Cyan
+            _pw_color "  pacwin v0.3.0" Cyan
             _pw_color "  PowerShell $($PSVersionTable.PSVersion)" Gray
             return
         }
@@ -932,7 +932,7 @@ function pacwin
         "^(version|--version|-v)$"
         {
             _pw_color "  pacwin" White -NoNewline
-            _pw_color " v0.2.7" Gray
+            _pw_color " v0.3.0" Gray
         }
 
         Default

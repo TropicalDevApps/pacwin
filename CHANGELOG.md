@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-12
+
+### Added
+- **Comprehensive Winget Parser Tests**: Reached full coverage for multiple table formats, segmented separators, and noise filtering.
+- **Search Engine Robustness**: Implemented graceful suppression and reporting of package manager executable failures during concurrent searches.
+
+### Changed
+- **Winget Parser Refactor**: Introduced `_pw_extract_column` helper to unify and simplify locale-aware table parsing logic.
+- **Update Logic Flattening**: Refactored `_pw_handle_update` using early returns to eliminate deeply nested conditionals and improve maintainability.
+- **Performance Optimizations**: Replaced slow `ForEach-Object` pipeline usages with high-performance `foreach` loops and `Generic.List` collections for ~3x speedup.
+- **Enhanced Test Environment**: Improved Pester 5 environment isolation by ensuring clean module loading/unloading between test suites.
+
+### Fixed
+- **Winget Header Sensitivity**: Parser is now more resilient to non-English headers and varying column widths.
+- **Search Error Suppression**: Missing package managers no longer cause the search command to throw unhandled exceptions.
+
+### Security
+- **Reinforced Sanitization**: Expanded OWASP-style injection tests for input sanitization in `_pw_sanitize`, including Unicode/Emoji handling and array input validation.
+
 ## [0.2.7] - 2026-05-03
 
 ### Added
