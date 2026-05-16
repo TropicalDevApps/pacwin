@@ -1,7 +1,7 @@
 <table border="0">
   <tr>
     <td width="200" align="center" valign="top">
-      <img src="docs/logo_pacwin.png" width="180" alt="pacwin logo">
+      <img src="docs/logo.svg" width="180" alt="pacwin logo">
     </td>
     <td valign="top">
       <h1>pacwin</h1>
