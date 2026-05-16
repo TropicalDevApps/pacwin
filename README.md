@@ -20,7 +20,7 @@
 ---
 
 <p align="center">
-  <img src="docs/screenshot.png" alt="pacwin rebranding" width="900" />
+  <img src="docs/shot.png" alt="pacwin rebranding" width="900" />
 </p>
 
 ---
