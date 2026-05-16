@@ -73,9 +73,12 @@ function _pw_header
     param($managers)
 
     _pw_color ""
-    _pw_color "  ╔════════════════════════════════════════════╗" Cyan
-    _pw_color "  ║   T R O P I C A L _ U I   //   P A C W I N   ║" Cyan
-    _pw_color "  ╚════════════════════════════════════════════╝" Cyan
+    _pw_color "   ____                     _             __ ___             " Cyan
+    _pw_color "  /_  /______  ___  _ _____( )___  ____ _/ /|   \ ___ _  __ " Cyan
+    _pw_color "   / // __/ _ \/ _ \| / / __/ // _ \/ __ `/ / | / // -_) |/ / " Cyan
+    _pw_color "  /_//_/  \___/ .__/|__/\__/_/ \___/\__,_/_/  |___/ \__/|___/  " Cyan
+    _pw_color "             /_/                                              " Cyan
+    _pw_color "  [ STATION_CORE ] // POWERED_BY_TROPICAL_DEV // BUILD: STABLE" DarkGray
     _pw_color ""
 
     if ($null -ne $managers)
@@ -83,7 +86,6 @@ function _pw_header
         # TUI_STATUS_BAR (DENSE)
         _pw_color "  " -NoNewline
         $keys = "winget", "choco", "scoop"
-        $statusLine = ""
         for ($i = 0; $i -lt $keys.Count; $i++)
         {
             $k = $keys[$i]
@@ -101,12 +103,11 @@ function _pw_header
         _pw_color "  //  " DarkGray -NoNewline
         _pw_color "v0.3.1" White -NoNewline
         _pw_color "  //  " DarkGray -NoNewline
-        _pw_color "STABLE_X64" DarkGray
+        _pw_color "ENV: WINDOWS_X64" DarkGray
     }
 
     _pw_sep
 }
-
 function _pw_sep
 {
     $w = try
