@@ -184,11 +184,11 @@ stateDiagram-v2
 
 ## Command Reference
 
-For a comprehensive breakdown, see the **[Wiki](https://github.com/julesklord/pacwin/wiki)**.  
+For a comprehensive breakdown, see the **[Wiki](docs/wiki/index.md)**.  
 
 *   **[Installation Guide](docs/wiki/Installation.md)**
-*   **[CLI Command Reference](docs/wiki/CLI-Guide.md)**
-*   **[Technical Architecture](docs/wiki/Architecture.md)**
+*   **[CLI Command Reference](docs/wiki/Command_Reference.md)**
+*   **[Technical Architecture](docs/wiki/architecture.md)**
 
 | Full Command | Short Alias | Description |
 | :--- | :--- | :--- |
