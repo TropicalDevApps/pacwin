@@ -30,7 +30,7 @@
   - [Overview](#overview)
   - [Using as a CLI Tool](#using-as-a-cli-tool)
   - [Installation](#installation)
-  - [Key Features (v0.4.0)](#key-features)
+  - [Key Features (v0.4.1)](#key-features)
   - [Technical Architecture](#technical-architecture)
   - [Core Lifecycle](#core-lifecycle)
   - [Command Reference](#command-reference)
@@ -100,15 +100,15 @@ cd pacwin
 
 ---
 
-## Key Features (v0.4.0)
+## Key Features (v0.4.1)
 
 *   **Multi-Manager Search**: Concurrent scanning of Winget, Chocolatey, and Scoop.
+*   **sfsu Rust Integration**: Blazing fast searches, listings, and outdated checks leveraging `sfsu` when available, with clean scoop fallback.
+*   **Locale Independence & Robust Parsers**: Universal tabular parsers that handle any Windows language configuration and dynamic columnar alignment.
 *   **Intelligent Selection**: Yaourt-style interactive prompts for numbered package selection.
-*   **Robust Parsers**: Locale-aware column detection and noise filtering for consistent output.
 *   **Security Hardened**: Strict input sanitization and path validation to prevent shell injection.
-*   **Unified Concurrency**: Automatic detection of PS version to use the fastest async model available.
-*   **Diagnostic Doctor**: Health check tool to verify manager status and PATH configuration.
-*   **State Management**: Export/Import package lists to JSON for backup or migration.
+*   **Legacy Compatibility**: Engineered to work flawlessly on Windows PowerShell 5.1 and modern PowerShell 7+.
+*   **Diagnostic Doctor**: Health check tool to verify manager status, version telemetry, and PATH configuration.
 
 ---
 
@@ -207,8 +207,8 @@ For a comprehensive breakdown, see the **[Wiki](docs/wiki/index.md)**.
 | **v0.1.0** | ✅ | First hybrid search engine release. |
 | **v0.2.0** | ✅ | Export/Import and Tab Completion. |
 | **v0.3.0** | ✅ | Major performance refactor & test coverage. |
-| **v0.4.0** | ✅ | Fixed Scoop detection (sfsu hook support). |
-| **v0.4.0** | ⏳ | UI Rebrand & Enhanced Telemetry. |
+| **v0.4.0** | ✅ | Brand redesign (Pitahaya style) & ASCII banner. |
+| **v0.4.1** | ✅ | sfsu support, locale-independence, and PowerShell 5.1/Pester 3 compatibility. |
 
 ---
 

@@ -41,13 +41,14 @@ After installation, restart your PowerShell session or dot-source your profile. 
 
 ```pwsh
 PS> pacwin doctor
-  >> pacwin v0.2.4  --  universal package layer
-  [ winget + | choco + | scoop + ]
+  >> pacwin v0.4.1  --  universal package layer
+  [ winget + | choco + | scoop + | sfsu + ]
   ===============================================================================
   Detected Managers:
   * winget -> C:\Users\user\AppData\Local\Microsoft\WindowsApps\winget.exe
   * choco -> C:\ProgramData\chocolatey\bin\choco.exe
   * scoop -> C:\Users\user\scoop\shims\scoop.ps1
+  * sfsu -> C:\Users\user\scoop\shims\sfsu.exe
 
 You should also run the health check:
 
