@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-05-22
+### Changed
+- **Parser Conditionals Refactoring**: Streamlined and flattened deeply nested conditional statements inside `_pw_parse_winget_lines` and `_pw_parse_scoop_lines` in `pacwin.psm1`. Extracted local variables to eliminate inline sub-expression nesting (`$(if ...)`), improving long-term readability and maintainability.
+
 ## [0.4.1] - 2026-05-22
 ### Fixed
 - **PowerShell 5.1 & Pester 3.4.0 Compatibility**: Ported Pester tests to 100% ASCII-pure scripts with dynamic escape characters to bypass ANSI codepage issues. Fixed `-Be` and `-Not -Throw` syntax to use classic compatible operators `Should Be` and `Should Not Throw`.

@@ -13,7 +13,7 @@ RootModule = 'pacwin.psm1'
 
 
 # Version number of this module.
-ModuleVersion = '0.4.1'
+ModuleVersion = '0.4.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -108,7 +108,7 @@ PrivateData = @{
         # IconUri = ''
 
         # ReleaseNotes of this module
-        ReleaseNotes = 'v0.4.0: TropicalDev Rebrand - High-impact industrial CLI aesthetic, standardized documentation, and deep repository cleanup.'
+        ReleaseNotes = 'v0.4.2: Clean parser refactoring with early returns and flatter logic in winget and scoop line parsers.'
 
         # Prerelease string of this module
         # Prerelease = ''

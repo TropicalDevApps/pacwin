@@ -41,7 +41,7 @@ After installation, restart your PowerShell session or dot-source your profile. 
 
 ```pwsh
 PS> pacwin doctor
-  >> pacwin v0.4.1  --  universal package layer
+  >> pacwin v0.4.2  --  universal package layer
   [ winget + | choco + | scoop + | sfsu + ]
   ===============================================================================
   Detected Managers:

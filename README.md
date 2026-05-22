@@ -30,7 +30,7 @@
   - [Overview](#overview)
   - [Using as a CLI Tool](#using-as-a-cli-tool)
   - [Installation](#installation)
-  - [Key Features (v0.4.1)](#key-features)
+  - [Key Features (v0.4.2)](#key-features)
   - [Technical Architecture](#technical-architecture)
   - [Core Lifecycle](#core-lifecycle)
   - [Command Reference](#command-reference)
@@ -100,7 +100,7 @@ cd pacwin
 
 ---
 
-## Key Features (v0.4.1)
+## Key Features (v0.4.2)
 
 *   **Multi-Manager Search**: Concurrent scanning of Winget, Chocolatey, and Scoop.
 *   **sfsu Rust Integration**: Blazing fast searches, listings, and outdated checks leveraging `sfsu` when available, with clean scoop fallback.
@@ -209,6 +209,7 @@ For a comprehensive breakdown, see the **[Wiki](docs/wiki/index.md)**.
 | **v0.3.0** | ✅ | Major performance refactor & test coverage. |
 | **v0.4.0** | ✅ | Brand redesign (Pitahaya style) & ASCII banner. |
 | **v0.4.1** | ✅ | sfsu support, locale-independence, and PowerShell 5.1/Pester 3 compatibility. |
+| **v0.4.2** | ✅ | Streamlined flat parsers with clean early-return checks. |
 
 ---
 
