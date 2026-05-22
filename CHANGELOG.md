@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-05-22
+### Fixed
+- **PowerShell 5.1 & Pester 3.4.0 Compatibility**: Ported Pester tests to 100% ASCII-pure scripts with dynamic escape characters to bypass ANSI codepage issues. Fixed `-Be` and `-Not -Throw` syntax to use classic compatible operators `Should Be` and `Should Not Throw`.
+- **Mock Scope Leakage**: Isolated principal command mocks inside separate Context blocks to prevent side-effects on independent parser test suites.
+- **Scoop Tabular Separators**: Hardened regex pattern in Scoop outdated parser to robustly skip multi-column table headers containing spaces.
+- **Winget Fallback Count**: Handled single-object collection wrapper in PowerShell 5.1 for winget fallback outputs using `@()`.
+
 ## [0.4.0] - 2026-05-12
 Added
 TropicalDev Identity: Official handover to TropicalDev brand with full CLI aesthetic overhaul.

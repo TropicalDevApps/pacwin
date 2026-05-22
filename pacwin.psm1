@@ -369,14 +369,14 @@ function _pw_parse_scoop_lines
 {
     param([string[]]$lines)
     $results = [System.Collections.Generic.List[PSCustomObject]]::new()
-    $inResults = $false
     foreach ($line in $lines)
     {
         if ([string]::IsNullOrWhiteSpace($line)) { continue }
 
-        # Detect start of results (header or Scoop's "Results from" line)
-        if ($line -match "^Results from" -or $line -match "^\s*Name\s+Version\s+Source")
-        { $inResults = $true; continue
+        # Skip headers or separators (supports multi-language)
+        if ($line -match "^\s*[-=]{3,}\s*$" -or $line -match "^\s*[Nn]ame\s+[Vv]ersion" -or $line -match "^\s*[Nn]ombre\s+[Vv]ersi" -or $line -match "^Results from")
+        {
+            continue
         }
 
         # If we get a line that looks like a PSCustomObject string representation, try to handle it
@@ -386,16 +386,11 @@ function _pw_parse_scoop_lines
                     Name = $Matches[1].Trim(); ID = $Matches[1].Trim()
                     Version = $Matches[2].Trim(); Source = "scoop"; Manager = "scoop"
                 })
-            $inResults = $true
             continue
         }
 
-        if (-not $inResults -or $line -match "^\s*$|^-{3,}")
-        { continue
-        }
-
-        # Handle 'name (version) [source]' format
-        if ($line -match "^\s+(\S+)\s+\(([^)]+)\)")
+        # Handle 'name (version) [source]' or 'name (version)' format
+        if ($line -match "^\s*(\S+)\s+\(([^)]+)\)")
         {
             $results.Add([PSCustomObject]@{
                     Name = $Matches[1]; ID = $Matches[1]
@@ -406,7 +401,7 @@ function _pw_parse_scoop_lines
 
         # Handle columnar format: Name  Version  Source
         $parts = ($line.Trim() -split "\s{2,}").Where({ $_ -ne "" })
-        if ($parts.Count -eq 0 -or $parts[0] -match "^[Nn]ame$|^Source$")
+        if ($parts.Count -eq 0 -or $parts[0] -match "^[Nn]ame$|^[Ss]ource$|^[Nn]ombre$|^[Oo]rigen$")
         { continue
         }
 
@@ -419,6 +414,77 @@ function _pw_parse_scoop_lines
                 Source  = "scoop"
                 Manager = "scoop"
             })
+    }
+    return ,$results
+}
+
+function _pw_parse_scoop_outdated_lines
+{
+    param([string[]]$lines)
+    $results = [System.Collections.Generic.List[PSCustomObject]]::new()
+    foreach ($line in $lines)
+    {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+
+        # Skip headers and table separators (supports multi-language)
+        if ($line -match "^[-\s=]{3,}$" -or $line -match "^\s*[Nn]ame\s+" -or $line -match "^Results from" -or $line -match "^\s*[Nn]ombre\s+")
+        { continue }
+
+        # Format 1: "neovim (0.9.4 -> 0.9.5)"
+        if ($line -match "^\s*(\S+)\s+\(([^)]+)\s*->\s*([^)]+)\)")
+        {
+            $results.Add([PSCustomObject]@{
+                Name    = $Matches[1]
+                ID      = $Matches[1]
+                Version = $Matches[3]  # The new version
+                Source  = "scoop"
+                Manager = "scoop"
+            })
+            continue
+        }
+
+        # Format 2: "neovim has a new version" (English classic)
+        if ($line -match "(\S+)\s+has\s+a\s+new\s+version")
+        {
+            $results.Add([PSCustomObject]@{
+                Name    = $Matches[1]
+                ID      = $Matches[1]
+                Version = "Later"
+                Source  = "scoop"
+                Manager = "scoop"
+            })
+            continue
+        }
+
+        # Format 3: "neovim: 0.9.4 -> 0.9.5"
+        if ($line -match "^\s*(\S+)\s*:\s*(\S+)\s*->\s*(\S+)")
+        {
+            $results.Add([PSCustomObject]@{
+                Name    = $Matches[1]
+                ID      = $Matches[1]
+                Version = $Matches[3]
+                Source  = "scoop"
+                Manager = "scoop"
+            })
+            continue
+        }
+
+        # Format 4: Columnar format of 'sfsu outdated' or 'scoop status' table:
+        # Name      Current      Available
+        # ----      -------      ---------
+        # neovim    0.9.4        0.9.5
+        $parts = ($line.Trim() -split "\s{2,}").Where({ $_ -ne "" })
+        if ($parts.Count -ge 2 -and $parts[0] -notmatch "^[Nn]ame|^[Cc]urrent|^[Aa]vailable|^[Nn]ombre")
+        {
+            $newVer = if ($parts.Count -ge 3) { $parts[2] } else { $parts[1] }
+            $results.Add([PSCustomObject]@{
+                Name    = $parts[0]
+                ID      = $parts[0]
+                Version = $newVer
+                Source  = "scoop"
+                Manager = "scoop"
+            })
+        }
     }
     return ,$results
 }
@@ -1650,7 +1716,14 @@ function _pw_do_sync
     }
     if ($managers["scoop"])
     {
-        $raw = scoop list 2>$null
+        $sfsu = Get-Command sfsu -ErrorAction SilentlyContinue
+        $raw = if ($sfsu)
+        {
+            & $sfsu.Source list 2>$null
+        } else
+        {
+            & $managers["scoop"] list 2>$null
+        }
         $parsed = _pw_parse_scoop_lines $raw
         foreach ($p in $parsed)
         { $installed.Add($p)
@@ -1888,16 +1961,24 @@ function _pw_do_outdated
         if (-not $Silent)
         { _pw_color "  -- scoop ------------------------------" Green
         }
-        $out = scoop status 2>$null
+        $sfsu = Get-Command sfsu -ErrorAction SilentlyContinue
+        $out = if ($sfsu)
+        {
+            & $sfsu.Source outdated 2>$null
+        } else
+        {
+            & $managers["scoop"] status 2>$null
+        }
+
+        $lines = [System.Collections.Generic.List[string]]::new($out.Count)
         foreach ($line in $out)
         {
-            if ($line -match "(\S+)\s+has\s+a\s+new\s+version")
-            {
-                $allResults.Add([PSCustomObject]@{
-                        Name    = $Matches[1]; ID = $Matches[1]
-                        Version = "Later"; Source = "scoop"; Manager = "scoop"
-                    })
-            }
+            if ($line) { $lines.Add([string]$line) }
+        }
+        $parsed = _pw_parse_scoop_outdated_lines $lines
+        foreach ($p in $parsed)
+        {
+            $allResults.Add($p)
         }
     }
 
@@ -1946,10 +2027,21 @@ function _pw_do_list
     if ($managers["scoop"])
     {
         _pw_color "  -- scoop ------------------------------" Green
-        if ($filter)
-        { scoop list $filter
+        $sfsu = Get-Command sfsu -ErrorAction SilentlyContinue
+        if ($sfsu)
+        {
+            if ($filter)
+            { & $sfsu.Source list $filter
+            } else
+            { & $sfsu.Source list
+            }
         } else
-        { scoop list
+        {
+            if ($filter)
+            { & $managers["scoop"] list $filter
+            } else
+            { & $managers["scoop"] list
+            }
         }
     }
 }
